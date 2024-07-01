@@ -21,6 +21,27 @@ class UserService {
         }
     }
 
+    async signIn(email, plainPassword) {
+        try {
+            // step 1 -> fetch the user using the email
+            const user = await this.userRepository.getByEmail(email)
+            // step 2 -> compare incoming palin password with stores encrypted password
+            const passwordMatch = this.checkPassword(plainPassword, user.password)
+
+            if(!passwordMatch) {
+                console.log("Pasword doesn't match")
+                throw { error: "Incorrect password" }
+            }
+
+            // step 3 -> if passwords match create a token and send it to the user
+            const newJWT = this.createToken({ email: user.email, id: user.id })
+            return newJWT
+        } catch (error) {
+            console.log("Something went wrong in the sign in process")
+            throw error
+        }
+    }
+
     createToken(user) {
         try {
             const token = jwt.sign(user, JWT_KEY, { expiresIn: "1d" })
@@ -41,7 +62,7 @@ class UserService {
         }
     }
 
-    comparePassword(userInputPlainPassword, encryptedPassword) {
+    checkPassword(userInputPlainPassword, encryptedPassword) {
         try {
             return bcrypt.compareSync(userInputPlainPassword, encryptedPassword)
         } catch (error) {
