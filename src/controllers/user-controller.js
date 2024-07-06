@@ -34,11 +34,11 @@ const signIn = async (req, res) => {
             err: {}
         })
     } catch (error) {
-        return res.status(500).json({
+        return res.status(error.statusCode).json({
             data: {},
             success: false,
-            message: "Something went wrong",
-            err: error
+            message: error.message,
+            err: error.explanation
         })
     }
 }
